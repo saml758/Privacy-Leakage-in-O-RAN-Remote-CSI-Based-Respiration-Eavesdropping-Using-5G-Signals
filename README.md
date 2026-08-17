@@ -4,6 +4,15 @@
 This repository contains the source code, example data,
 and demonstration materials for our submission.
 
+## Demo Video
+
+We provide a demo video showcasing the **office experiment setup** and the performance of **CellRespi**.
+
+- 🌐 **Watch the demo online:** [CellRespi Demo Website](https://saml758.github.io/Privacy-Leakage-in-O-RAN-Remote-CSI-Based-Respiration-Eavesdropping-Using-5G-Signals/)
+- 🎥 **Download the demo video:** [`assets/demo video.mp4`](assets/demo%20video.mp4)
+
+The video presents the experimental setup and representative respiration sensing results obtained with CellRespi.
+
 ## Quick Start
 We provide a lightweight example dataset for reproducing the core functionality of our system.
 
