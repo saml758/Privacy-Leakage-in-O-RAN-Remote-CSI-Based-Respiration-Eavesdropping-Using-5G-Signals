@@ -567,16 +567,6 @@
             <p>Generate plots, CSV/XLSX summaries, breath counts, estimated BPM, and reliability labels.</p>
           </article>
         </div>
-        <div class="figure-card" style="margin-top: 20px;">
-          <img src="assets/pipeline-overview.png" alt="Overview of the CellRespi signal-processing pipeline">
-          <div class="figure-caption">
-            <h3>Pipeline Overview</h3>
-            <p>
-              The processing pipeline combines CSI preprocessing, amplitude and phase feature extraction,
-              antenna-pair fusion, confidence filtering, and respiration-rate estimation.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -585,28 +575,27 @@
         <div class="section-head">
           <h2>Selected Results</h2>
           <p>
-            A small set of representative figures from the paper is included here for the GitHub page.
-            The complete PDF and LaTeX source are intentionally not part of this artifact repository.
+            A small set of representative figures from the paper is included here.
           </p>
         </div>
         <div class="grid two">
+          <article class="figure-card">
+            <img src="assets/pipeline-overview.png" alt="Overview of the CellRespi signal-processing pipeline">
+            <div class="figure-caption">
+              <h3>Pipeline Overview</h3>
+              <p>
+                The processing pipeline combines CSI preprocessing, amplitude and phase feature extraction,
+                antenna-pair fusion, confidence filtering, and respiration-rate estimation.
+              </p>
+            </div>
+          </article>
           <article class="figure-card">
             <img src="assets/experimental-setup.png" alt="Outdoor 5G base station, office, home, working, and sleeping scenarios">
             <div class="figure-caption">
               <h3>Experimental Setup</h3>
               <p>
-                The evaluation uses an outdoor 5G O-RAN platform, a commercial smartphone, and
-                office/home scenarios at roughly 500 m RU-UE distance.
-              </p>
-            </div>
-          </article>
-          <article class="figure-card">
-            <img src="assets/overall-results.png" alt="Overall detection rate and accuracy in office and home environments">
-            <div class="figure-caption">
-              <h3>Overall Performance</h3>
-              <p>
-                In office settings, respiration is detectable for 65% of monitoring time with 93%
-                accuracy; in home sleep settings, detection reaches 60% with 92% accuracy.
+                The evaluation uses an outdoor 5G O-RAN platform, a commercial smartphone, 
+                and office/home scenarios with an RU–UE distance on the order of hundreds of meters.
               </p>
             </div>
           </article>
