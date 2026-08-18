@@ -1,18 +1,665 @@
-<section class="demo-section">
-  <h2>Demo</h2>
-  <p>
-    The following video demonstrates the complete workflow,
-    from loading the CSI measurements to extracting the
-    respiration signal.
-  </p>
-
-  <video
-    controls
-    preload="metadata"
-    poster="assets/demo-cover.png"
-    style="width: 70%; max-width: 800px; height: auto;"
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Leakage in O-RAN | Remote CSI-Based Respiration Eavesdropping</title>
+  <meta
+    name="description"
+    content="Demo video, source code, and example CSI data for remote respiration extraction using 5G CSI signals in O-RAN settings."
   >
-    <source src="assets/demo video.mp4" type="video/mp4">
-    Your browser does not support HTML5 video.
-  </video>
-</section>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #16202a;
+      --muted: #5d6977;
+      --line: #d9e1e8;
+      --paper: #f7fafc;
+      --teal: #0f766e;
+      --blue: #1d4ed8;
+      --amber: #b45309;
+      --rose: #be123c;
+      --shadow: 0 24px 70px rgba(20, 32, 42, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      background:
+        linear-gradient(135deg, rgba(15, 118, 110, 0.10), rgba(29, 78, 216, 0.05) 38%, transparent 62%),
+        var(--paper);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(217, 225, 232, 0.82);
+      background: rgba(247, 250, 252, 0.90);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(15, 118, 110, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ecfeff, #eff6ff);
+      color: var(--teal);
+      font-size: 18px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .nav-links a:hover {
+      color: var(--teal);
+    }
+
+    .hero {
+      padding: 78px 0 52px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.04fr) minmax(340px, 0.96fr);
+      gap: 42px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 2px;
+      background: var(--teal);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin-bottom: 22px;
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-bottom: 30px;
+      color: #384655;
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-weight: 750;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button.primary {
+      color: white;
+      background: #123c69;
+      box-shadow: 0 16px 34px rgba(18, 60, 105, 0.22);
+    }
+
+    .button.secondary {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .signal-panel {
+      position: relative;
+      min-height: 430px;
+      border: 1px solid rgba(217, 225, 232, 0.92);
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.52)),
+        repeating-linear-gradient(90deg, rgba(29, 78, 216, 0.10) 0 1px, transparent 1px 42px),
+        repeating-linear-gradient(0deg, rgba(15, 118, 110, 0.10) 0 1px, transparent 1px 42px);
+      box-shadow: var(--shadow);
+    }
+
+    .signal-panel svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .panel-readout {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .readout {
+      border: 1px solid rgba(217, 225, 232, 0.92);
+      border-radius: 8px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .readout strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .readout span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    section {
+      padding: 62px 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .section-head h2 {
+      margin-bottom: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      max-width: 520px;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .video-wrap {
+      overflow: hidden;
+      border: 1px solid rgba(217, 225, 232, 0.92);
+      border-radius: 8px;
+      background: #0d1722;
+      box-shadow: var(--shadow);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0d1722;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .card {
+      border: 1px solid rgba(217, 225, 232, 0.92);
+      border-radius: 8px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.84);
+      box-shadow: 0 16px 40px rgba(20, 32, 42, 0.07);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .card p {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #164e63;
+      background: #cffafe;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .method {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      min-height: 184px;
+      border: 1px solid rgba(217, 225, 232, 0.92);
+      border-radius: 8px;
+      padding: 22px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: "0" counter(step);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      margin-bottom: 18px;
+      border-radius: 8px;
+      color: white;
+      background: var(--teal);
+      font-weight: 850;
+    }
+
+    .step:nth-child(2)::before {
+      background: var(--blue);
+    }
+
+    .step:nth-child(3)::before {
+      background: var(--amber);
+    }
+
+    .step:nth-child(4)::before {
+      background: var(--rose);
+    }
+
+    .step h3 {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .step p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .code-block {
+      overflow-x: auto;
+      margin: 0;
+      border-radius: 8px;
+      padding: 20px;
+      color: #d8e4f0;
+      background: #111827;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .resource-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 56px;
+      border-top: 1px solid var(--line);
+      color: var(--ink);
+      font-weight: 750;
+    }
+
+    .resource-link:first-of-type {
+      border-top: 0;
+    }
+
+    .resource-link span {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .footer {
+      padding: 34px 0 46px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .grid.two,
+      .grid.three,
+      .method {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .section-head h2 {
+        margin-bottom: 12px;
+      }
+
+      .signal-panel {
+        min-height: 360px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell {
+        width: min(100% - 28px, 1120px);
+      }
+
+      .nav-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+        gap: 10px;
+      }
+
+      .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .hero {
+        padding-top: 46px;
+      }
+
+      .panel-readout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="shell nav-inner">
+      <a class="brand" href="#top" aria-label="Project home">
+        <span class="brand-mark">5G</span>
+        <span>O-RAN CSI Respiration</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#demo">Demo</a>
+        <a href="#method">Method</a>
+        <a href="#resources">Resources</a>
+        <a href="#quick-start">Quick Start</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="shell hero-grid">
+        <div>
+          <p class="eyebrow">5G CSI sensing &middot; O-RAN privacy</p>
+          <h1>Privacy Leakage in O-RAN: Remote CSI-Based Respiration Eavesdropping Using 5G Signals</h1>
+          <p class="lead">
+            A project page for demonstrating how channel state information collected from a 5G/O-RAN setup
+            can be processed to recover respiration patterns. This repository includes a demo video,
+            the extraction code, and example CSI snapshots for reproduction.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#demo">Watch Demo</a>
+            <a class="button secondary" href="source%20code/respiration_extraction_from_csi.py">View Code</a>
+            <a class="button secondary" href="README.md">README</a>
+          </div>
+        </div>
+
+        <div class="signal-panel" aria-label="Stylized CSI respiration signal visualization">
+          <svg viewBox="0 0 720 520" role="img" aria-label="Multi-antenna CSI waveforms converging into a respiration estimate">
+            <defs>
+              <linearGradient id="waveA" x1="0" x2="1">
+                <stop offset="0" stop-color="#0f766e"/>
+                <stop offset="1" stop-color="#1d4ed8"/>
+              </linearGradient>
+              <linearGradient id="waveB" x1="0" x2="1">
+                <stop offset="0" stop-color="#b45309"/>
+                <stop offset="1" stop-color="#be123c"/>
+              </linearGradient>
+            </defs>
+            <path d="M55 168 C116 84 168 252 232 168 S350 84 414 168 535 252 665 138" fill="none" stroke="url(#waveA)" stroke-width="8" stroke-linecap="round"/>
+            <path d="M55 238 C120 314 176 160 244 236 S361 315 430 236 553 160 665 268" fill="none" stroke="url(#waveB)" stroke-width="7" stroke-linecap="round" opacity="0.82"/>
+            <path d="M55 318 C112 272 178 366 245 318 S366 272 432 318 552 366 665 302" fill="none" stroke="#123c69" stroke-width="6" stroke-linecap="round" opacity="0.78"/>
+            <g fill="#ffffff" stroke="#123c69" stroke-width="4">
+              <circle cx="132" cy="168" r="16"/>
+              <circle cx="292" cy="238" r="16"/>
+              <circle cx="462" cy="318" r="16"/>
+              <circle cx="596" cy="150" r="16"/>
+            </g>
+          </svg>
+          <div class="panel-readout">
+            <div class="readout">
+              <strong>6</strong>
+              <span>Antenna pairs</span>
+            </div>
+            <div class="readout">
+              <strong>50 Hz</strong>
+              <span>Default sample rate</span>
+            </div>
+            <div class="readout">
+              <strong>.npz</strong>
+              <span>CSI snapshots</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Demo Video</h2>
+          <p>
+            The video demonstrates the workflow from loading CSI measurements to extracting and visualizing
+            the respiration signal.
+          </p>
+        </div>
+        <div class="video-wrap">
+          <video controls preload="metadata">
+            <source src="assets/demo%20video.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+      </div>
+    </section>
+
+    <section id="method">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Processing Pipeline</h2>
+          <p>
+            The provided Python script reproduces the core respiration extraction flow using amplitude,
+            phase, quality scoring, and spatial fusion across antenna pairs.
+          </p>
+        </div>
+        <div class="method">
+          <article class="step">
+            <h3>Load CSI snapshots</h3>
+            <p>Read timestamped complex CSI arrays from the example `.npz` files and estimate recording quality.</p>
+          </article>
+          <article class="step">
+            <h3>Extract pair signals</h3>
+            <p>Compute amplitude ratios and phase differences for all six antenna pairs, then band-pass the respiration range.</p>
+          </article>
+          <article class="step">
+            <h3>Score and fuse</h3>
+            <p>Estimate frequency, SNR, peak ratio, temporal stability, and pair consistency before weighted fusion.</p>
+          </article>
+          <article class="step">
+            <h3>Report results</h3>
+            <p>Generate plots, CSV/XLSX summaries, breath counts, estimated BPM, and reliability labels.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="resources">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Repository Resources</h2>
+          <p>
+            The repository is intentionally compact: one demo video, one runnable script, and example
+            CSI snapshots that can be used to reproduce the basic workflow.
+          </p>
+        </div>
+        <div class="grid three">
+          <article class="card">
+            <span class="tag">Demo</span>
+            <h3>Workflow Video</h3>
+            <p>A visual walkthrough of loading measurements and extracting the respiration signal.</p>
+            <a class="resource-link" href="assets/demo%20video.mp4">Open MP4 <span>assets</span></a>
+          </article>
+          <article class="card">
+            <span class="tag">Code</span>
+            <h3>Extraction Script</h3>
+            <p>Python implementation for CSI preprocessing, pair fusion, peak counting, and summary export.</p>
+            <a class="resource-link" href="source%20code/respiration_extraction_from_csi.py">Open Python <span>source code</span></a>
+          </article>
+          <article class="card">
+            <span class="tag">Data</span>
+            <h3>Example CSI</h3>
+            <p>A lightweight set of timestamped `.npz` CSI snapshots for testing the processing pipeline.</p>
+            <a class="resource-link" href="example%20data/csi_snapshot_1775672403.npz">Open sample <span>example data</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="quick-start">
+      <div class="shell">
+        <div class="section-head">
+          <h2>Quick Start</h2>
+          <p>
+            Set `DATA_DIRS` in the script to point at the example data folder, then run the extraction
+            pipeline locally.
+          </p>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <h3>Install and Run</h3>
+            <pre class="code-block"><code>cd Privacy-Leakage-in-O-RAN-Remote-CSI-Based-Respiration-Eavesdropping-Using-5G-Signals
+pip install numpy scipy matplotlib
+
+# Edit source code/respiration_extraction_from_csi.py:
+# DATA_DIRS = ["../example data"] or ["example data"]
+
+python "source code/respiration_extraction_from_csi.py"</code></pre>
+          </article>
+          <article class="card">
+            <h3>Expected Outputs</h3>
+            <p>
+              The script writes figures and summary tables to `RES_figures`, including fused respiration
+              plots, estimated BPM, breath counts, confidence scores, and reliability labels.
+            </p>
+            <a class="resource-link" href="README.md">Read setup notes <span>README</span></a>
+            <a class="resource-link" href="source%20code/respiration_extraction_from_csi.py">Inspect parameters <span>Python</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">
+      Privacy Leakage in O-RAN: Remote CSI-Based Respiration Eavesdropping Using 5G Signals.
+      Static project page for GitHub Pages.
+    </div>
+  </footer>
+</body>
+</html>
